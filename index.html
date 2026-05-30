@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCQ Question Entry</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body{
+            background:#f4f6f9;
+            min-height:100vh;
+        }
+
+        .form-card{
+            max-width:900px;
+            margin:40px auto;
+            background:white;
+            padding:30px;
+            border-radius:15px;
+            box-shadow:0 0 20px rgba(0,0,0,0.08);
+        }
+
+        .title{
+            text-align:center;
+            font-weight:700;
+            margin-bottom:25px;
+        }
+
+        .preview-image{
+            max-width:250px;
+            max-height:250px;
+            display:none;
+            margin-top:15px;
+            border-radius:10px;
+            border:1px solid #ddd;
+        }
+
+        .required{
+            color:red;
+        }
+
+        textarea{
+            resize:vertical;
+        }
+
+        .loading-spinner{
+            display:none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="form-card">
+
+        <h2 class="title">
+            MCQ Question Entry System
+        </h2>
+
+        <form id="questionForm">
+
+            <!-- Subject -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">
+                    Subject <span class="required">*</span>
+                </label>
+
+                <select
+                    class="form-select"
+                    id="subject"
+                    required
+                >
+                    <option value="">
+                        Select Subject
+                    </option>
+
+                    <option value="electrical">
+                        Electrical
+                    </option>
+
+                    <option value="electronics">
+                        Electronics
+                    </option>
+
+                    <option value="civil">
+                        Civil
+                    </option>
+
+                    <option value="mechanical">
+                        Mechanical
+                    </option>
+
+                    <option value="mechanics">
+                        Mechanics
+                    </option>
+
+                    <option value="programming">
+                        Programming
+                    </option>
+
+                    <option value="mathematics">
+                        Mathematics
+                    </option>
+
+                </select>
+            </div>
+
+            <!-- Question -->
+            <div class="mb-3">
+
+                <label class="form-label fw-bold">
+                    Question
+                    <span class="required">*</span>
+                </label>
+
+                <textarea
+                    class="form-control"
+                    rows="4"
+                    id="question"
+                    placeholder="Enter Question"
+                    required
+                ></textarea>
+
+            </div>
+
+            <!-- Image Upload -->
+            <div class="mb-3">
+
+                <label class="form-label fw-bold">
+                    Question Image (Optional)
+                </label>
+
+                <input
+                    type="file"
+                    class="form-control"
+                    id="image"
+                    accept="image/*"
+                >
+
+                <img
+                    id="previewImage"
+                    class="preview-image"
+                >
+
+            </div>
+
+            <!-- Options -->
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        Option A
+                    </label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="optionA"
+                        required
+                    >
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        Option B
+                    </label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="optionB"
+                        required
+                    >
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        Option C
+                    </label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="optionC"
+                        required
+                    >
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        Option D
+                    </label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="optionD"
+                        required
+                    >
+                </div>
+
+            </div>
+
+            <!-- Correct Answer -->
+            <div class="mb-3">
+
+                <label class="form-label fw-bold">
+                    Correct Answer
+                    <span class="required">*</span>
+                </label>
+
+                <select
+                    class="form-select"
+                    id="correctAnswer"
+                    required
+                >
+                    <option value="">
+                        Select Correct Option
+                    </option>
+
+                    <option value="0">Option A</option>
+                    <option value="1">Option B</option>
+                    <option value="2">Option C</option>
+                    <option value="3">Option D</option>
+
+                </select>
+
+            </div>
+
+            <!-- Remarks -->
+            <div class="mb-4">
+
+                <label class="form-label fw-bold">
+                    Remarks / Important Notes
+                </label>
+
+                <textarea
+                    class="form-control"
+                    rows="5"
+                    id="remarks"
+                    placeholder="Enter explanation, formulas, tricks, notes etc."
+                ></textarea>
+
+            </div>
+
+            <div class="d-grid">
+
+                <button
+                    type="submit"
+                    id="saveBtn"
+                    class="btn btn-primary btn-lg"
+                >
+
+                    <span
+                        class="spinner-border spinner-border-sm loading-spinner"
+                        id="spinner"
+                    ></span>
+
+                    <span id="btnText">
+                        Save Question
+                    </span>
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+
+const imageInput =
+    document.getElementById("image");
+
+const previewImage =
+    document.getElementById("previewImage");
+
+imageInput.addEventListener(
+    "change",
+    function () {
+
+        const file = this.files[0];
+
+        if (!file) {
+            previewImage.style.display = "none";
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+
+            previewImage.src = e.target.result;
+
+            previewImage.style.display = "block";
+        };
+
+        reader.readAsDataURL(file);
+    }
+);
+
+document
+.getElementById("questionForm")
+.addEventListener(
+    "submit",
+    async function (e) {
+
+        e.preventDefault();
+
+        const saveBtn =
+            document.getElementById("saveBtn");
+
+        const spinner =
+            document.getElementById("spinner");
+
+        const btnText =
+            document.getElementById("btnText");
+
+        saveBtn.disabled = true;
+
+        spinner.style.display = "inline-block";
+
+        btnText.innerText = " Saving...";
+
+        try {
+
+            const formData =
+                new FormData();
+
+            formData.append(
+                "subject",
+                document.getElementById("subject").value
+            );
+
+            formData.append(
+                "question",
+                document.getElementById("question").value
+            );
+
+            formData.append(
+                "options",
+                JSON.stringify([
+                    document.getElementById("optionA").value,
+                    document.getElementById("optionB").value,
+                    document.getElementById("optionC").value,
+                    document.getElementById("optionD").value
+                ])
+            );
+
+            formData.append(
+                "correctAnswer",
+                document.getElementById("correctAnswer").value
+            );
+
+            formData.append(
+                "remarks",
+                document.getElementById("remarks").value
+            );
+
+            const image =
+                document.getElementById("image")
+                .files[0];
+
+            if (image) {
+                formData.append(
+                    "image",
+                    image
+                );
+            }
+
+            const response =
+                await fetch(
+                    "http://localhost:3000/api/questions/create",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message ||
+                    "Failed to save question"
+                );
+            }
+
+            alert(
+                "✅ Question Saved Successfully"
+            );
+
+            document
+                .getElementById("questionForm")
+                .reset();
+
+            previewImage.style.display =
+                "none";
+
+        }
+        catch (error) {
+
+            console.error(error);
+
+            alert(
+                "❌ " + error.message
+            );
+
+        }
+        finally {
+
+            saveBtn.disabled = false;
+
+            spinner.style.display = "none";
+
+            btnText.innerText =
+                "Save Question";
+        }
+    }
+);
+
+</script>
+
+</body>
+</html>
