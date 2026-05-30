@@ -146,15 +146,44 @@ body{
         <p class="text-muted">Question Bank</p>
     </div>
 
-    <div id="questionContainer"></div>
+    <div class="card mb-4 shadow-sm">
+    <div class="card-body d-flex flex-wrap gap-4">
+
+        <div class="form-check form-switch">
+            <input
+                class="form-check-input"
+                type="checkbox"
+                id="toggleAnswers"
+                checked
+            >
+            <label class="form-check-label">
+                Show Correct Answers
+            </label>
+        </div>
+
+        <div class="form-check form-switch">
+            <input
+                class="form-check-input"
+                type="checkbox"
+                id="toggleRemarks"
+                checked
+            >
+            <label class="form-check-label">
+                Show Remarks
+            </label>
+        </div>
+
+    </div>
+</div>
+
+<div id="questionContainer"></div>
+    
 
 </div>
 
 <script>
 
-
-    // Simulated API call
-  async function fetchQuestions() {
+async function fetchQuestions() {
 
     const params =
         new URLSearchParams(
@@ -190,85 +219,174 @@ body{
 
 async function loadQuestions(){
 
-    const questions = await fetchQuestions();
+    try{
 
-    document.getElementById("subjectTitle").innerText =
-        questions[0].subject;
+        const questions =
+            await fetchQuestions();
 
-    const container =
-        document.getElementById("questionContainer");
+        document.getElementById(
+            "subjectTitle"
+        ).innerText =
+            questions[0]?.subject || "Questions";
 
-    container.innerHTML = "";
+        const container =
+            document.getElementById(
+                "questionContainer"
+            );
 
-    questions.forEach((q,index)=>{
+        container.innerHTML = "";
 
-        const optionsHTML = q.options.map((option,i)=>{
+        questions.forEach((q,index)=>{
 
-            const isCorrect = i === q.correctAnswer;
+            const optionsHTML =
+                q.options.map((option,i)=>{
 
-            return `
-                <li class="list-group-item option-item
-                    ${isCorrect ? 'correct-option' : ''}">
-                    ${String.fromCharCode(65+i)}. ${option}
-                </li>
+                    const isCorrect =
+                        i === q.correctAnswer;
+
+                    return `
+                        <li
+                            class="list-group-item option-item
+                            ${isCorrect ? 'correct-answer correct-option' : ''}"
+                        >
+                            ${String.fromCharCode(65+i)}.
+                            ${option}
+                        </li>
+                    `;
+
+                }).join("");
+
+            container.innerHTML += `
+            <div class="card question-card mb-4">
+
+                <div class="card-body">
+
+                    <div class="question-number">
+                        Question ${index + 1}
+                    </div>
+
+                    <h5 class="mb-4">
+                        ${q.question}
+                    </h5>
+
+                    ${
+                        q.imageUrl
+                        ? `
+                        <div class="text-center mb-4">
+                            <img
+                                src="${q.imageUrl}"
+                                alt="Question Image"
+                                class="img-fluid rounded shadow-sm"
+                                style="
+                                    max-height:200px;
+                                    object-fit:contain;
+                                    border:1px solid #ddd;
+                                    padding:10px;
+                                    background:white;
+                                "
+                            >
+                        </div>
+                        `
+                        : ""
+                    }
+
+                    <ul class="list-group mb-4">
+                        ${optionsHTML}
+                    </ul>
+
+                    ${
+                        q.remarks
+                        ? `
+                        <div class="remarks-box remarks-section">
+                            <strong>
+                                Important Notes:
+                            </strong>
+                            <br>
+                            ${q.remarks}
+                        </div>
+                        `
+                        : ""
+                    }
+
+                </div>
+
+            </div>
             `;
 
-        }).join("");
-container.innerHTML += `
-<div class="card question-card mb-4">
+        });
 
-    <div class="card-body">
+        initializeToggles();
 
-        <div class="question-number">
-            Question ${index + 1}
-        </div>
+    }catch(error){
 
-        <h5 class="mb-4">
-            ${q.question}
-        </h5>
+        document.getElementById(
+            "questionContainer"
+        ).innerHTML = `
+            <div class="alert alert-danger">
+                ${error.message}
+            </div>
+        `;
+    }
 
-        ${
-            q.imageUrl
-            ? `
-                <div class="text-center mb-4">
-                    <img
-                        src="${q.imageUrl}"
-                        alt="Question Image"
-                        class="img-fluid rounded shadow-sm"
-                        style="
-                            max-height:200px;
-                            object-fit:contain;
-                            border:1px solid #ddd;
-                            padding:10px;
-                            background:white;
-                        "
-                    >
-                </div>
-            `
-            : ""
+}
+
+function initializeToggles(){
+
+    const toggleAnswers =
+        document.getElementById(
+            "toggleAnswers"
+        );
+
+    const toggleRemarks =
+        document.getElementById(
+            "toggleRemarks"
+        );
+
+    toggleAnswers.addEventListener(
+        "change",
+        function(){
+
+            document
+                .querySelectorAll(
+                    ".correct-answer"
+                )
+                .forEach(item=>{
+
+                    if(this.checked){
+                        item.classList.add(
+                            "correct-option"
+                        );
+                    }else{
+                        item.classList.remove(
+                            "correct-option"
+                        );
+                    }
+
+                });
+
         }
+    );
 
-        <ul class="list-group mb-4">
-            ${optionsHTML}
-        </ul>
+    toggleRemarks.addEventListener(
+        "change",
+        function(){
 
-        ${
-            q.remarks
-            ? `
-                <div class="remarks-box">
-                    <strong>Important Notes:</strong>
-                    <br>
-                    ${q.remarks}
-                </div>
-            `
-            : ""
+            document
+                .querySelectorAll(
+                    ".remarks-section"
+                )
+                .forEach(item=>{
+
+                    item.style.display =
+                        this.checked
+                        ? "block"
+                        : "none";
+
+                });
+
         }
+    );
 
-    </div>
-
-</div>
-`;
-    });
 }
 
 loadQuestions();
